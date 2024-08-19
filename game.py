@@ -13,50 +13,79 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GREY = (127, 127, 127)
 PURPLE = (127, 0, 127)
+LIGHT_GREEN = (150, 255, 150)
+LIGHTER_GREEN = (200, 255, 200)
+GOLD = (255, 215, 0)
+
+# fonts are less cool
+font = pygame.font.SysFont('freesansbold.ttf', 30)
+smallerfont = pygame.font.SysFont('freesansbold.ttf', 27)
+
+def text(text, x, y, size, colour = BLACK):
+    font = pygame.font.SysFont('freesansbold.ttf', size)
+    screen.blit(font.render(text, False, colour), (x, y))
 
 # Variables
 X_SPEED = 10
 
 JUMP_HEIGHT = 100
-cur_frame = 0
 
 # big frame jumps
-
 # when jumping go left to right. When falling go right to left
 # (subtracting adjacent values to get frame difference)
-jump_frames = [38, 72, 102, 128, 150, 168, 182, 192, 198, 200]
+JUMP_FRAMES = [38, 72, 102, 128, 150, 168, 182, 192, 198, 200]
 
-x = 50
-y = screen_height-40-80
-cur_size = 80
 
-jumping = False
-falling = False
+def initialize_variables():
+    global cur_frame
+    global cur_size
+    global jumping
+    global falling
+    global cur_colour
+    global push_blocks
+    global old_block
+    global obstacles
+    global first_space
+    global outside_parent
+    cur_frame = 0
+    cur_size = 80
+    jumping = False
+    falling = False
+    cur_colour = PURPLE
+    push_blocks = []
+    old_block = []
+    obstacles = []
+    first_space = True
+    outside_parent = True
 
-cur_colour = PURPLE
-push_blocks = []
-old_block = []
-obstacles = []
+# level 1 variables
+def level_1_setup():
+    global x
+    global y
+    global obstacles
+    global goal_zones
+    x = 50
+    y = screen_height-40-80
+    obstacles = [
+        pygame.Rect(0, screen_height-40, screen_width, 40), # floor
+        pygame.Rect(0, 0, 20, screen_height), # left wall
+        pygame.Rect(screen_width-20, 0, 20, screen_height) # right wall
+    ]
 
-first_space = True
-outside_parent = True
+    goal_zones = [
+        pygame.Rect(20, screen_height-40-100, 100, 100), # leftmost
+        pygame.Rect((20 + screen_width-20-100)/2 - 50, screen_height-40-100, 100, 100), # middle
+        pygame.Rect(screen_width-20-100, screen_height-40-100, 100, 100) # rightmost
+    ]
 
-font = pygame.font.SysFont('freesansbold.ttf', 30)
-smallerfont = pygame.font.SysFont('freesansbold.ttf', 27)
+initialize_variables()
+level_1_setup()
 
 # Loop until the user clicks the close button.
 done = False
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
-
-# level 1 environment
-floor_area = pygame.Rect(0, screen_height-40, screen_width, 40)
-left_wall = pygame.Rect(0, 0, 20, screen_height)
-right_wall = pygame.Rect(screen_width-20, 0, 20, screen_height)
-obstacles.append(floor_area)
-obstacles.append(left_wall)
-obstacles.append(right_wall)
 
 # -------- Main Program Loop -----------
 while not done:
@@ -67,12 +96,12 @@ while not done:
 #     --- Drawing code should go here
     if jumping:
         if cur_frame == 0:
-            cur_jump_size = jump_frames[0]
+            cur_jump_size = JUMP_FRAMES[0]
         else:
-            cur_jump_size = jump_frames[cur_frame] - jump_frames[cur_frame-1]
+            cur_jump_size = JUMP_FRAMES[cur_frame] - JUMP_FRAMES[cur_frame-1]
         y -= cur_jump_size
 
-        if cur_frame >= len(jump_frames)-1:
+        if cur_frame >= len(JUMP_FRAMES)-1:
             falling = True
             jumping = False
         else:
@@ -80,9 +109,9 @@ while not done:
 
     if falling:
         if cur_frame == 0:
-            cur_jump_size = jump_frames[0]
+            cur_jump_size = JUMP_FRAMES[0]
         else:
-            cur_jump_size = jump_frames[cur_frame] - jump_frames[cur_frame-1]
+            cur_jump_size = JUMP_FRAMES[cur_frame] - JUMP_FRAMES[cur_frame-1]
 
         if cur_frame > 0:
             cur_frame -= 1
@@ -142,8 +171,8 @@ while not done:
                     for obstacle in obstacles:
                         if obstacle.colliderect(push_block2): # does not check prev right
                             push_block2[0] = obstacle[0] - push_block2[3]
-                            push_block[0] = obstacle[0] - push_block2[3] - push_block2[3]
-                            x = obstacle[0] - obstacle[0] - push_block2[3] - push_block2[3] - cur_size
+                            push_block[0] = obstacle[0] - push_block2[3] - push_block[3]
+                            x = obstacle[0] - push_block2[3] - push_block[3] - cur_size
 
 
     if keys[pygame.K_UP] and cur_frame == 0 and not falling:
@@ -154,7 +183,7 @@ while not done:
             x += 20
             y += 40
             cur_size //= 2
-            jump_frames = [x//2 for x in jump_frames]
+            JUMP_FRAMES = [x//2 for x in JUMP_FRAMES]
             cur_colour = BLUE
             outside_parent = False
         elif cur_size == 40:
@@ -162,16 +191,33 @@ while not done:
             x += 10
             y += 20
             cur_size //= 2
-            jump_frames = [x//2 for x in jump_frames]
+            JUMP_FRAMES = [x//2 for x in JUMP_FRAMES]
             cur_colour = RED
             outside_parent = False
         first_space = False
     elif not keys[pygame.K_SPACE]:
         first_space = True
 
+    if keys[pygame.K_r]: # restart
+        initialize_variables()
+        level_1_setup()
 
     screen.fill(WHITE)
+    win = True
     player_area =  pygame.Rect(x, y, cur_size, cur_size)
+
+    for goal_zone in goal_zones:
+        if player_area.colliderect(goal_zone) or \
+            any([push_block.colliderect(goal_zone) for push_block in push_blocks]) or \
+            old_block and old_block.colliderect(goal_zone):
+            pygame.draw.rect(screen, LIGHT_GREEN, goal_zone)
+        else:
+            pygame.draw.rect(screen, LIGHTER_GREEN, goal_zone)
+            win = False
+
+    if win:
+        text('CONGRATULATIONS!', 410, 100, 80, GOLD)
+        text('You Win! Thank you for Playing!', 240, 200, 80, GOLD)
 
 
     for obstacle in obstacles:
@@ -191,7 +237,7 @@ while not done:
     player_feet_area = pygame.Rect(x, y+cur_size, cur_size, 1)
     if not jumping and not falling and not any([obstacle.colliderect(player_feet_area) for obstacle in push_blocks + obstacles]):
         falling = True
-        cur_frame = len(jump_frames) - 1
+        cur_frame = len(JUMP_FRAMES) - 1
 
     pygame.draw.rect(screen, cur_colour, player_area)
 
