@@ -52,7 +52,11 @@ clock = pygame.time.Clock()
 
 # level 1 environment
 floor_area = pygame.Rect(0, screen_height-40, screen_width, 40)
+left_wall = pygame.Rect(0, 0, 20, screen_height)
+right_wall = pygame.Rect(screen_width-20, 0, 20, screen_height)
 obstacles.append(floor_area)
+obstacles.append(left_wall)
+obstacles.append(right_wall)
 
 # -------- Main Program Loop -----------
 while not done:
@@ -92,14 +96,40 @@ while not done:
                 falling = False
                 cur_frame = 0
 
-    screen.fill(WHITE)
-    pygame.draw.rect(screen, PURPLE, [50, 350-90, 4*10, 4*10])
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
+        x_prev_left = x
         x -= X_SPEED
+        player_area =  pygame.Rect(x, y, cur_size, cur_size)
+        for obstacle in obstacles:
+            if obstacle.colliderect(player_area) and x_prev_left >= obstacle[0] + obstacle[2]:
+                x = obstacle[0] + obstacle[2]
+        for push_block in push_blocks:
+            if push_block.colliderect(player_area) and x_prev_left >= push_block[0] + push_block[2]:
+                push_block_prev_left = push_block[0]
+                push_block[0] -= X_SPEED
+                for obstacle in obstacles:
+                    if obstacle.colliderect(push_block) and push_block_prev_left >= obstacle[0] + obstacle[2]:
+                        push_block[0] = obstacle[0] + obstacle[2]
+                        x = obstacle[0] - obstacle[0] + obstacle[2] + push_block[3]
     if keys[pygame.K_RIGHT]:
+        x_prev_right = x + cur_size
         x += X_SPEED
+        player_area =  pygame.Rect(x, y, cur_size, cur_size)
+        for obstacle in  obstacles:
+            if obstacle.colliderect(player_area) and x_prev_right <= obstacle[0]:
+                x = obstacle[0] - cur_size
+        for push_block in push_blocks:
+            if push_block.colliderect(player_area) and x_prev_right <= obstacle[0]:
+                push_block_prev_right = push_block[0] + push_block[2]
+                push_block[0] += X_SPEED
+                for obstacle in obstacles:
+                    if obstacle.colliderect(push_block) and push_block_prev_right <= obstacle[0]:
+                        push_block[0] = obstacle[0] - push_block[3]
+                        x = obstacle[0] - push_block[3] - cur_size
+
+
     if keys[pygame.K_UP] and cur_frame == 0 and not falling:
         jumping = True
     if keys[pygame.K_SPACE] and first_space and outside_parent:
@@ -123,25 +153,10 @@ while not done:
     elif not keys[pygame.K_SPACE]:
         first_space = True
 
-    pygame.draw.rect(screen, GREY, [1000, 350, 80, 80])
-    pygame.draw.rect(screen, GREY, [50, 350, 80, 80])
-    pygame.draw.rect(screen, GREY, [600, 330, 100, 100])
 
-
+    screen.fill(WHITE)
     player_area =  pygame.Rect(x, y, cur_size, cur_size)
 
-    # if pygame.Rect(1000, 350, 80, 80).colliderect(player_area):
-    #     x = 1000-cur_size
-    # if pygame.Rect(50, 350, 80, 80).colliderect(player_area):
-    #     x = 50+80
-    # if pygame.Rect(600, 330, 100, 100).colliderect(player_area):
-    #     y = 330-cur_size
-    # if pygame.Rect(floor_area).colliderect(player_area): # bottom check
-    #     y = 330+80-cur_size
-    # if pygame.Rect(400, 200, 100, 100).colliderect(player_area):
-    #     y = 200+100
-    #     falling = True
-    #     jumping = False
 
     for obstacle in obstacles:
         pygame.draw.rect(screen, GREY, obstacle)
