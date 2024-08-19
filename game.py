@@ -1,6 +1,8 @@
 import pygame
 from player import Player
 from push_block import PushBlock
+from random import randint
+
 pygame.init()
 
 screen_width = 1440
@@ -38,7 +40,6 @@ X_SPEED = 6
 
 JUMP_HEIGHT = 100
 
-
 def initialize_variables():
     global push_blocks
     global old_block
@@ -57,7 +58,6 @@ def initialize_variables():
     first_space = True
     outside_parent = True
 
-# level 1 variables
 def level_1_setup():
     global x
     global y
@@ -77,9 +77,7 @@ def level_1_setup():
         pygame.Rect(screen_width-20-100, screen_height-40-100, 100, 100) # rightmost
     ]
 
-# level 2 variables
-def level_1_setup():
-    global x
+def level_2_setup():
     global y
     global obstacles
     global goal_zones
@@ -93,16 +91,12 @@ def level_1_setup():
 
     goal_zones = [
         pygame.Rect(20, screen_height-40-100, 100, 100), # leftmost
-        pygame.Rect(20+100+80, screen_height-40-100, 100, 100), # 2nd leftmost
-        pygame.Rect(screen_width-20-100-100-60, screen_height-40-100, 100, 100), # 2nd rightmost
+        pygame.Rect(20+100+120, screen_height-40-100, 100, 100), # 2nd leftmost
+        pygame.Rect(screen_width-20-100-100-85, screen_height-40-100, 100, 100), # 2nd rightmost
         pygame.Rect(screen_width-20-100, screen_height-40-100, 100, 100) # rightmost
     ]
 
-
-# level 3 variable
-def level_1_setup():
-    global x
-    global y
+def level_3_setup():
     global obstacles
     global goal_zones
     global player
@@ -119,8 +113,40 @@ def level_1_setup():
         pygame.Rect(screen_width-20-100, screen_height-240-100, 100, 100) # rightmost
     ]
 
-initialize_variables()
-level_1_setup()
+
+def level_4_setup():
+    global obstacles
+    global goal_zones
+    global player
+    player = Player(50, screen_height-40-96, 96, RED)
+    obstacles = [
+        pygame.Rect(0, screen_height-40, screen_width, 40), # floor
+        pygame.Rect(0, 0, 20, screen_height), # left wall
+        pygame.Rect(screen_width-20, 0, 20, screen_height), # right wall
+        pygame.Rect(0, 0, screen_width, 40), # ceiling
+        pygame.Rect(screen_width-20-1200, screen_height-40-72-15, 1200, 20), # first level bottom
+        pygame.Rect(screen_width-20-1200, screen_height-40-72-15-72-15, 1200, 20), # first level top
+        pygame.Rect(screen_width-20-1000, screen_height-214-200+38+17, 1200, 20), # second level
+        pygame.Rect(screen_width-20-800, screen_height-359-84-20, 1200, 20), # second level top
+        pygame.Rect(0, screen_height-359-200+19, 400, 20), # left level
+        pygame.Rect(screen_width-20-900, screen_height-540-100+19, 1200, 20) # topmost level
+    ]
+
+    goal_zones = [
+        pygame.Rect(screen_width-20-100, screen_height-40-72-15-72-15, 100, 100), # bottom
+        pygame.Rect(screen_width-20-100, screen_height-359-84-20+10, 100, 100), # middle
+        pygame.Rect(screen_width-20-100, screen_height-540-100+19-100, 100, 100)
+    ]
+
+cur_level = 4
+def start_level():
+    initialize_variables()
+    if cur_level == 1: level_1_setup()
+    if cur_level == 2: level_2_setup()
+    if cur_level == 3: level_3_setup()
+    if cur_level == 4: level_4_setup()
+
+start_level()
 
 # Loop until the user clicks the close button.
 done = False
@@ -140,13 +166,22 @@ while not done:
             cur_jump_size = jump_frames[0]
         else:
             cur_jump_size = jump_frames[player.cur_frame] - jump_frames[player.cur_frame-1]
-        player.y -= cur_jump_size
+
 
         if player.cur_frame >= len(jump_frames)-1:
             player.falling = True
             player.jumping = False
         else:
             player.cur_frame += 1
+
+        y_prev_top = player.y
+        player.y -= cur_jump_size
+        for obstacle in [push_block.get_area() for push_block in push_blocks] + obstacles:
+            if obstacle.colliderect(player.get_area()) and y_prev_top >= obstacle[1] + obstacle[3]:
+                player.y = obstacle[1] + obstacle[3]
+                player.falling = True
+                player.jumping = False
+                player.cur_frame = len(jump_frames)-1
 
     # calling fall length jump size :p
     if player.falling:
@@ -197,7 +232,7 @@ while not done:
         for push_block in push_blocks:
             if push_block.get_area().colliderect(player.get_area()) and x_prev_left >= push_block.x + push_block.size:
                 push_block_prev_left = push_block.x
-                push_block.x -= X_SPEED
+                push_block.x = player.x - push_block.size
                 for obstacle in obstacles:
                     if obstacle.colliderect(push_block.get_area()) and push_block_prev_left >= obstacle[0] + obstacle[2]:
                         push_block.x = obstacle[0] + obstacle[2]
@@ -208,8 +243,8 @@ while not done:
                     for obstacle in obstacles:
                         if obstacle.colliderect(push_block2.get_area()): # does not check prev left
                             push_block2.x = obstacle[0] + obstacle[2]
-                            push_block.x = obstacle[0] + obstacle[2] + push_block2[3]
-                            player.x = obstacle[0] - obstacle[0] + obstacle[2] + push_block2[3] + push_block.size
+                            push_block.x = obstacle[0] + obstacle[2] + push_block2.size
+                            player.x = obstacle[0] - obstacle[0] + obstacle[2] + push_block2.size + push_block.size
     if keys[pygame.K_RIGHT]:
         x_prev_right = player.x + player.size
         player.x += X_SPEED
@@ -217,9 +252,9 @@ while not done:
             if obstacle.colliderect(player.get_area()) and x_prev_right <= obstacle[0]:
                 player.x = obstacle[0] - player.size
         for push_block in push_blocks:
-            if push_block.get_area().colliderect(player.get_area()) and x_prev_right <= obstacle[0]:
+            if push_block.get_area().colliderect(player.get_area()):  # get rid of right check
                 push_block_prev_right = push_block.x + push_block.size
-                push_block.x += X_SPEED
+                push_block.x = player.x + player.size
                 for obstacle in obstacles:
                     if obstacle.colliderect(push_block.get_area()) and push_block_prev_right <= obstacle[0]:
                         push_block.x = obstacle[0] - push_block.size
@@ -229,9 +264,9 @@ while not done:
                     push_block2.x += X_SPEED
                     for obstacle in obstacles:
                         if obstacle.colliderect(push_block2.get_area()): # does not check prev right
-                            push_block2.x = obstacle[0] - push_block2[3]
-                            push_block.x = obstacle[0] - push_block2[3] - push_block.size
-                            player.x = obstacle[0] - push_block2[3] - push_block.size - player.size
+                            push_block2.x = obstacle[0] - push_block2.size
+                            push_block.x = obstacle[0] - push_block2.size - push_block.size
+                            player.x = obstacle[0] - push_block2.size - push_block.size - player.size
 
 
     if keys[pygame.K_UP] and player.cur_frame == 0 and not player.falling:
@@ -257,8 +292,7 @@ while not done:
         first_space = True
 
     if keys[pygame.K_r]: # restart
-        initialize_variables()
-        level_1_setup()
+        start_level()
 
     screen.fill(WHITE)
     win = True
