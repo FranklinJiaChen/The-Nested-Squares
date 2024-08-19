@@ -11,10 +11,16 @@ pygame.display.set_caption('Nesting Squares Puzzle Platformer')
 #Colours are cool!
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+DARK_RED = (139, 0, 0)
 RED = (255, 0, 0)
+DARK_BLUE = (0, 0, 139)
 BLUE = (0, 0, 255)
 GREY = (127, 127, 127)
+DARK_GREY = (169, 169, 169)
+DARK_GREY = (169, 169, 169)
+WALL_BROWN = (139, 69, 19)
 PURPLE = (127, 0, 127)
+MAGENTA = (255, 0, 255)
 LIGHT_GREEN = (150, 255, 150)
 LIGHTER_GREEN = (200, 255, 200)
 GOLD = (255, 215, 0)
@@ -28,7 +34,7 @@ def text(text, x, y, size, colour = BLACK):
     screen.blit(font.render(text, False, colour), (x, y))
 
 # Variables
-X_SPEED = 10
+X_SPEED = 6
 
 JUMP_HEIGHT = 100
 
@@ -43,7 +49,7 @@ def initialize_variables():
     # big frame jumps
     # when jumping go left to right. When falling go right to left
     # (subtracting adjacent values to get frame difference)
-    # (this is not how gravity works? it gets weaker as you get smaller)
+    # shift by leftmost number when you get smaller
     jump_frames = [38, 72, 102, 128, 150, 168, 182, 192, 198, 200]
     push_blocks = []
     old_block = None
@@ -58,7 +64,7 @@ def level_1_setup():
     global obstacles
     global goal_zones
     global player
-    player = Player(50, screen_height-40-80, 80, PURPLE)
+    player = Player(50, screen_height-40-96, 96, RED)
     obstacles = [
         pygame.Rect(0, screen_height-40, screen_width, 40), # floor
         pygame.Rect(0, 0, 20, screen_height), # left wall
@@ -69,6 +75,48 @@ def level_1_setup():
         pygame.Rect(20, screen_height-40-100, 100, 100), # leftmost
         pygame.Rect((20 + screen_width-20-100)/2 - 50, screen_height-40-100, 100, 100), # middle
         pygame.Rect(screen_width-20-100, screen_height-40-100, 100, 100) # rightmost
+    ]
+
+# level 2 variables
+def level_1_setup():
+    global x
+    global y
+    global obstacles
+    global goal_zones
+    global player
+    player = Player(50, screen_height-40-96, 96, RED)
+    obstacles = [
+        pygame.Rect(0, screen_height-40, screen_width, 40), # floor
+        pygame.Rect(0, 0, 20, screen_height), # left wall
+        pygame.Rect(screen_width-20, 0, 20, screen_height) # right wall
+    ]
+
+    goal_zones = [
+        pygame.Rect(20, screen_height-40-100, 100, 100), # leftmost
+        pygame.Rect(20+100+80, screen_height-40-100, 100, 100), # 2nd leftmost
+        pygame.Rect(screen_width-20-100-100-60, screen_height-40-100, 100, 100), # 2nd rightmost
+        pygame.Rect(screen_width-20-100, screen_height-40-100, 100, 100) # rightmost
+    ]
+
+
+# level 3 variable
+def level_1_setup():
+    global x
+    global y
+    global obstacles
+    global goal_zones
+    global player
+    player = Player(50, screen_height-40-96, 96, RED)
+    obstacles = [
+        pygame.Rect(0, screen_height-40, screen_width//2 - 80, 40), # left floor
+        pygame.Rect(screen_width//2 + 80, screen_height-240, screen_width//2 - 40, 240), # right floor
+        pygame.Rect(0, 0, 20, screen_height), # left wall
+        pygame.Rect(screen_width-20, 0, 20, screen_height) # right wall
+    ]
+
+    goal_zones = [
+        pygame.Rect(20, screen_height-40-100, 100, 100), # leftmost
+        pygame.Rect(screen_width-20-100, screen_height-240-100, 100, 100) # rightmost
     ]
 
 initialize_variables()
@@ -144,6 +192,8 @@ while not done:
         for obstacle in obstacles:
             if obstacle.colliderect(player.get_area()) and x_prev_left >= obstacle[0] + obstacle[2]:
                 player.x = obstacle[0] + obstacle[2]
+        # gross pushing logic that checks if pushable and if it pushes into
+        # a wall/another pushable (hard coded)
         for push_block in push_blocks:
             if push_block.get_area().colliderect(player.get_area()) and x_prev_left >= push_block.x + push_block.size:
                 push_block_prev_left = push_block.x
@@ -187,17 +237,20 @@ while not done:
     if keys[pygame.K_UP] and player.cur_frame == 0 and not player.falling:
         player.jumping = True
     if keys[pygame.K_SPACE] and first_space and outside_parent:
-        if player.size == 80:
-            big_push_block = PushBlock(player.x, player.y, 80, BLACK)
+        if player.size == 96:
+            big_push_block = PushBlock(player.x, player.y, 96, DARK_RED)
             old_block = big_push_block
-            player = Player(player.x + 20, player.y + 40, player.size//2, BLUE)
-            jump_frames = [x//2 for x in jump_frames]
+            player = Player(player.x + 12, player.y + 24, 72, BLUE)
+            jump_frames = [x-38 for x in jump_frames]
+            _, *jump_frames = jump_frames # codegolf trick to popping last
+            print(jump_frames)
             outside_parent = False
-        elif player.size == 40:
-            small_push_block = PushBlock(player.x, player.y, 40, BLACK)
+        elif player.size == 72:
+            small_push_block = PushBlock(player.x, player.y, 72, DARK_BLUE)
             old_block = small_push_block
-            player = Player(player.x + 10, player.y + 20, player.size//2, RED)
-            jump_frames = [x//2 for x in jump_frames]
+            player = Player(player.x + 12, player.y + 24, 48, MAGENTA)
+            jump_frames = [x-32 for x in jump_frames]
+            _, *jump_frames = jump_frames
             outside_parent = False
         first_space = False
     elif not keys[pygame.K_SPACE]:
