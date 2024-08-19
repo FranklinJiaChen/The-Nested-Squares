@@ -31,11 +31,6 @@ X_SPEED = 10
 
 JUMP_HEIGHT = 100
 
-# big frame jumps
-# when jumping go left to right. When falling go right to left
-# (subtracting adjacent values to get frame difference)
-JUMP_FRAMES = [38, 72, 102, 128, 150, 168, 182, 192, 198, 200]
-
 
 def initialize_variables():
     global push_blocks
@@ -43,6 +38,12 @@ def initialize_variables():
     global obstacles
     global first_space
     global outside_parent
+    global jump_frames
+    # big frame jumps
+    # when jumping go left to right. When falling go right to left
+    # (subtracting adjacent values to get frame difference)
+    # (this is not how gravity works? it gets weaker as you get smaller)
+    jump_frames = [38, 72, 102, 128, 150, 168, 182, 192, 198, 200]
     push_blocks = []
     old_block = []
     obstacles = []
@@ -87,12 +88,12 @@ while not done:
 #     --- Drawing code should go here
     if player.jumping:
         if player.cur_frame == 0:
-            cur_jump_size = JUMP_FRAMES[0]
+            cur_jump_size = jump_frames[0]
         else:
-            cur_jump_size = JUMP_FRAMES[player.cur_frame] - JUMP_FRAMES[player.cur_frame-1]
+            cur_jump_size = jump_frames[player.cur_frame] - jump_frames[player.cur_frame-1]
         player.y -= cur_jump_size
 
-        if player.cur_frame >= len(JUMP_FRAMES)-1:
+        if player.cur_frame >= len(jump_frames)-1:
             player.falling = True
             player.jumping = False
         else:
@@ -100,9 +101,9 @@ while not done:
 
     if player.falling:
         if player.cur_frame == 0:
-            cur_jump_size = JUMP_FRAMES[0]
+            cur_jump_size = jump_frames[0]
         else:
-            cur_jump_size = JUMP_FRAMES[player.cur_frame] - JUMP_FRAMES[player.cur_frame-1]
+            cur_jump_size = jump_frames[player.cur_frame] - jump_frames[player.cur_frame-1]
 
         if player.cur_frame > 0:
             player.cur_frame -= 1
@@ -167,19 +168,13 @@ while not done:
     if keys[pygame.K_SPACE] and first_space and outside_parent:
         if player.size == 80:
             old_block = pygame.Rect(player.x, player.y, 80, 80)
-            player.x += 20
-            player.y += 40
-            player.size //= 2
-            JUMP_FRAMES = [x//2 for x in JUMP_FRAMES]
-            cur_colour = BLUE
+            player = Player(player.x + 20, player.y + 40, player.size//2, BLUE)
+            jump_frames = [x//2 for x in jump_frames]
             outside_parent = False
         elif player.size == 40:
             old_block = pygame.Rect(player.x, player.y, 40, 40)
-            player.x += 10
-            player.y += 20
-            player.size //= 2
-            JUMP_FRAMES = [x//2 for x in JUMP_FRAMES]
-            cur_colour = RED
+            player = Player(player.x + 10, player.y + 20, player.size//2, RED)
+            jump_frames = [x//2 for x in jump_frames]
             outside_parent = False
         first_space = False
     elif not keys[pygame.K_SPACE]:
@@ -222,7 +217,7 @@ while not done:
     # if player feet not on ground
     if not player.jumping and not player.falling and not any([obstacle.colliderect(player.get_feet_area()) for obstacle in push_blocks + obstacles]):
         player.falling = True
-        player.cur_frame = len(JUMP_FRAMES) - 1
+        player.cur_frame = len(jump_frames) - 1
 
     pygame.draw.rect(screen, player.colour, player.get_area())
 
