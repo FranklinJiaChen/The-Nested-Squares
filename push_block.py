@@ -1,4 +1,3 @@
-# not used
 import pygame
 class PushBlock():
     def __init__(self, x, y, size, colour):
