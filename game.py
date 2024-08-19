@@ -113,6 +113,14 @@ while not done:
                     if obstacle.colliderect(push_block) and push_block_prev_left >= obstacle[0] + obstacle[2]:
                         push_block[0] = obstacle[0] + obstacle[2]
                         x = obstacle[0] - obstacle[0] + obstacle[2] + push_block[3]
+            for push_block2 in push_blocks:
+                if push_block.colliderect(push_block2) and push_block2 != push_block: # does not check prev left
+                    push_block2[0] -= X_SPEED
+                    for obstacle in obstacles:
+                        if obstacle.colliderect(push_block2): # does not check prev left
+                            push_block2[0] = obstacle[0] + obstacle[2]
+                            push_block[0] = obstacle[0] + obstacle[2] + push_block2[3]
+                            x = obstacle[0] - obstacle[0] + obstacle[2] + push_block2[3] + push_block[3]
     if keys[pygame.K_RIGHT]:
         x_prev_right = x + cur_size
         x += X_SPEED
@@ -128,6 +136,14 @@ while not done:
                     if obstacle.colliderect(push_block) and push_block_prev_right <= obstacle[0]:
                         push_block[0] = obstacle[0] - push_block[3]
                         x = obstacle[0] - push_block[3] - cur_size
+            for push_block2 in push_blocks:
+                if push_block.colliderect(push_block2) and push_block2 != push_block: # does not check prev right
+                    push_block2[0] += X_SPEED
+                    for obstacle in obstacles:
+                        if obstacle.colliderect(push_block2): # does not check prev right
+                            push_block2[0] = obstacle[0] - push_block2[3]
+                            push_block[0] = obstacle[0] - push_block2[3] - push_block2[3]
+                            x = obstacle[0] - obstacle[0] - push_block2[3] - push_block2[3] - cur_size
 
 
     if keys[pygame.K_UP] and cur_frame == 0 and not falling:
