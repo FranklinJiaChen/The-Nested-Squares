@@ -8,7 +8,7 @@ pygame.init()
 screen_width = 1440
 screen_height = 810
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption('Nesting Squares Puzzle Platformer')
+pygame.display.set_caption('The Nesting Squares')
 
 #Colours are cool!
 WHITE = (255, 255, 255)
@@ -43,7 +43,7 @@ X_SPEED = 6
 JUMP_HEIGHT = 100
 
 
-cur_level = 1
+cur_level = 8
 
 def initialize_variables():
     global push_blocks
@@ -233,7 +233,6 @@ def level_8_setup():
         pygame.Rect(screen_width-20-350, GROUND - LEVEL_HEIGHT*2, 1200, 20), # first level right
         pygame.Rect(screen_width-20-300, GROUND - LEVEL_HEIGHT*3, 1200, 20), # 1.5 level right
         pygame.Rect(screen_width-20-250, GROUND - LEVEL_HEIGHT*4, 1200, 20), # 2nd level right
-        pygame.Rect(screen_width-20-200, GROUND - LEVEL_HEIGHT*5, 1200, 20), # 2.5 level right
 
         pygame.Rect(20, GROUND - LEVEL_HEIGHT, 400, 20), # half-level left
         pygame.Rect(20, GROUND - LEVEL_HEIGHT*2, 350, 20), # first level left
@@ -242,14 +241,14 @@ def level_8_setup():
 
         pygame.Rect(screen_width//2 - 150, screen_height-214, 300, 20), # first level middle
 
-        pygame.Rect(20+100, screen_height-214-180-180, 500, 20), # top level left
-        pygame.Rect(screen_width-20-500-100, screen_height-214-180-180, 500, 20) # top level right
+        pygame.Rect(20+100, screen_height-214-180-150, 500, 20), # top level left
+        pygame.Rect(screen_width-20-500-100, screen_height-214-180-150, 500, 20) # top level right
     ]
 
     goal_zones = [
-        pygame.Rect(20+100+400, screen_height-214-180-180-100, 100, 100), # left
-        pygame.Rect(screen_width-20-500-100, screen_height-214-180-180-100, 100, 100), # middle
-        pygame.Rect(screen_width//2 - 50, screen_height-214-100-84, 100, 100)
+        pygame.Rect(20+100+400, screen_height-214-180-150-100-84, 100, 100), # left
+        pygame.Rect(screen_width-20-500-100, screen_height-214-180-150-100-84, 100, 100), # right
+        pygame.Rect(screen_width//2 - 50, screen_height-214-100-84, 100, 100) # middle
     ]
 
 
@@ -279,6 +278,7 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
+
 #     --- Drawing code should go here
     if player.jumping:
         if player.cur_frame == 0:
