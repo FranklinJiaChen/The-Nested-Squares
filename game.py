@@ -8,7 +8,7 @@ pygame.init()
 screen_width = 1440
 screen_height = 810
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption('The Nesting Squares')
+pygame.display.set_caption('The Nested Squares')
 
 #Colours are cool!
 WHITE = (255, 255, 255)
