@@ -42,6 +42,9 @@ X_SPEED = 6
 
 JUMP_HEIGHT = 100
 
+
+cur_level = 7
+
 def initialize_variables():
     global push_blocks
     global old_block
@@ -63,6 +66,9 @@ def initialize_variables():
     win = False
 
 def level_1_setup():
+    """
+    Basic 3 goals
+    """
     global obstacles
     global goal_zones
     global player
@@ -80,6 +86,9 @@ def level_1_setup():
     ]
 
 def level_2_setup():
+    """
+    4 goals. 2 close on the right
+    """
     global obstacles
     global goal_zones
     global player
@@ -93,11 +102,14 @@ def level_2_setup():
     goal_zones = [
         pygame.Rect(20, screen_height-40-100, 100, 100), # leftmost
         pygame.Rect(20+100+120, screen_height-40-100, 100, 100), # 2nd leftmost
-        pygame.Rect(screen_width-20-100-100-85, screen_height-40-100, 100, 100), # 2nd rightmost
+        pygame.Rect(screen_width-20-100-100-84, screen_height-40-100, 100, 100), # 2nd rightmost
         pygame.Rect(screen_width-20-100, screen_height-40-100, 100, 100) # rightmost
     ]
 
 def level_3_setup():
+    """
+    Jump?
+    """
     global obstacles
     global goal_zones
     global player
@@ -125,7 +137,7 @@ def level_4_setup():
         pygame.Rect(0, 0, 20, screen_height), # left border
         pygame.Rect(screen_width-20, 0, 20, screen_height), # left border
         pygame.Rect(0, 0, screen_width, 40), # ceiling
-        pygame.Rect(screen_width-20-1200, screen_height-40-72-15, 1200, 20), # first level bottom
+        pygame.Rect(screen_width-20-1000, screen_height-40-72-15, 1200, 20), # first level bottom
         pygame.Rect(screen_width-20-1200, screen_height-40-72-15-72-15, 1200, 20), # first level top
         pygame.Rect(screen_width-20-1000, screen_height-214-200+38+17, 1200, 20), # second level
         pygame.Rect(screen_width-20-800, screen_height-359-84-20, 1200, 20), # second level top
@@ -158,24 +170,44 @@ def level_5_setup():
     ]
 
 def level_6_setup():
+    "weird quadruple"
     global obstacles
     global goal_zones
     global player
     player = Player(50, screen_height-40-96, 96, RED)
     obstacles = [
-        pygame.Rect(0, screen_height-40, screen_width//2 - 42, 40), # left floor
-        pygame.Rect(screen_width//2 + 42, screen_height-40, screen_width//2 - 40, 240), # right floor
+        pygame.Rect(0, screen_height-40, screen_width, 40),
         pygame.Rect(0, 0, 20, screen_height), # left border
         pygame.Rect(screen_width-20, 0, 20, screen_height) # left border
     ]
 
     goal_zones = [
-        pygame.Rect(20, screen_height-40-100, 100, 100), # leftmost
-        pygame.Rect(screen_width-20-100, screen_height-240-100, 100, 100) # rightmost
+        pygame.Rect((20 + screen_width-20-100)/2+30+50, screen_height-40-100, 100, 100), # bottom right
+        pygame.Rect((20 + screen_width-20-100)/2-30-50, screen_height-40-100, 100, 100), # bottom left
+        pygame.Rect((20 + screen_width-20-100)/2+30+50+100, screen_height-40-100-100, 100, 100), # top right
+        pygame.Rect((20 + screen_width-20-100)/2-30-50-100, screen_height-40-100-100, 100, 100) # top left
+    ]
+
+def level_7_setup():
+    """
+    jump
+    """
+    global obstacles
+    global goal_zones
+    global player
+    player = Player(50, screen_height-40-96, 96, RED)
+    obstacles = [
+        pygame.Rect(0, screen_height-40, screen_width, 40),
+        pygame.Rect(0, 0, 20, screen_height), # left border
+        pygame.Rect(screen_width-20, 0, 20, screen_height) # left border
+    ]
+
+    goal_zones = [
+        pygame.Rect((20 + screen_width-20-100)/2, screen_height-470, 100, 100), # jump goal
     ]
 
 
-cur_level = 1
+
 def start_level():
     initialize_variables()
     if cur_level == 1: level_1_setup()
@@ -184,6 +216,7 @@ def start_level():
     if cur_level == 4: level_4_setup()
     if cur_level == 5: level_5_setup()
     if cur_level == 6: level_6_setup()
+    if cur_level == 7: level_7_setup()
 
 start_level()
 
@@ -291,7 +324,7 @@ while not done:
             if obstacle.colliderect(player.get_area()) and x_prev_right <= obstacle[0]:
                 player.x = obstacle[0] - player.size
         for push_block in push_blocks:
-            if push_block.get_area().colliderect(player.get_area()):  # get rid of right check
+            if push_block.get_area().colliderect(player.get_area()) and x_prev_right <= push_block.x:  # get rid of right check
                 push_block_prev_right = push_block.x + push_block.size
                 push_block.x = player.x + player.size
                 for obstacle in obstacles:
@@ -351,11 +384,11 @@ while not done:
     if check_win:
         win = True
     if win:
-        text('CONGRATULATIONS!', 410, 100, 80, GOLD)
+        text('CONGRATULATIONS!', 410, 110, 80, GOLD)
         if cur_level == LAST_LEVEL:
-            text('You Win! Thank you for Playing!', 240, 200, 80, GOLD)
+            text('You Win! Thank you for Playing!', 240, 210, 80, GOLD)
         else:
-            text('Press Z to continue', 445, 200, 80, BLACK)
+            text('Press Z to continue', 445, 210, 80, BLACK)
 
 
     for obstacle in obstacles:
