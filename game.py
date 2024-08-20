@@ -27,7 +27,7 @@ LIGHT_GREEN = (150, 255, 150)
 LIGHTER_GREEN = (200, 255, 200)
 GOLD = (255, 215, 0)
 
-LAST_LEVEL = 6
+LAST_LEVEL = 8
 
 # fonts are less cool
 font = pygame.font.SysFont('freesansbold.ttf', 30)
@@ -43,7 +43,7 @@ X_SPEED = 6
 JUMP_HEIGHT = 100
 
 
-cur_level = 7
+cur_level = 1
 
 def initialize_variables():
     global push_blocks
@@ -87,6 +87,24 @@ def level_1_setup():
 
 def level_2_setup():
     """
+    jump
+    """
+    global obstacles
+    global goal_zones
+    global player
+    player = Player(50, screen_height-40-96, 96, RED)
+    obstacles = [
+        pygame.Rect(0, screen_height-40, screen_width, 40),
+        pygame.Rect(0, 0, 20, screen_height), # left border
+        pygame.Rect(screen_width-20, 0, 20, screen_height) # left border
+    ]
+
+    goal_zones = [
+        pygame.Rect((20 + screen_width-20-100)/2, screen_height-470, 100, 100), # jump goal
+    ]
+
+def level_3_setup():
+    """
     4 goals. 2 close on the right
     """
     global obstacles
@@ -106,9 +124,9 @@ def level_2_setup():
         pygame.Rect(screen_width-20-100, screen_height-40-100, 100, 100) # rightmost
     ]
 
-def level_3_setup():
+def level_4_setup():
     """
-    Jump?
+    high ledge jump
     """
     global obstacles
     global goal_zones
@@ -127,7 +145,10 @@ def level_3_setup():
     ]
 
 
-def level_4_setup():
+def level_5_setup():
+    """
+    bunk bed
+    """
     global obstacles
     global goal_zones
     global player
@@ -151,7 +172,10 @@ def level_4_setup():
         pygame.Rect(screen_width-20-100, screen_height-540-100+19-100, 100, 100)
     ]
 
-def level_5_setup():
+def level_6_setup():
+    """
+    two ledges use big block as block
+    """
     global obstacles
     global goal_zones
     global player
@@ -169,8 +193,10 @@ def level_5_setup():
         pygame.Rect(screen_width-20-100, 600-70-100, 100, 100) # rightside
     ]
 
-def level_6_setup():
-    "weird quadruple"
+def level_7_setup():
+    """
+    weird quadruple
+    """
     global obstacles
     global goal_zones
     global player
@@ -188,22 +214,42 @@ def level_6_setup():
         pygame.Rect((20 + screen_width-20-100)/2-30-50-100, screen_height-40-100-100, 100, 100) # top left
     ]
 
-def level_7_setup():
+def level_8_setup():
     """
-    jump
+    fall down the middle
     """
+    LEVEL_HEIGHT = 90
+    GROUND = screen_height-40
     global obstacles
     global goal_zones
     global player
-    player = Player(50, screen_height-40-96, 96, RED)
+    player = Player(screen_width//2 - 48, screen_height-40-96, 96, RED)
     obstacles = [
-        pygame.Rect(0, screen_height-40, screen_width, 40),
+        pygame.Rect(0, screen_height-40, screen_width, 40), # floor
         pygame.Rect(0, 0, 20, screen_height), # left border
-        pygame.Rect(screen_width-20, 0, 20, screen_height) # left border
+        pygame.Rect(screen_width-20, 0, 20, screen_height), # left border
+
+        pygame.Rect(screen_width-20-400, GROUND - LEVEL_HEIGHT, 1200, 20), # half-level right
+        pygame.Rect(screen_width-20-350, GROUND - LEVEL_HEIGHT*2, 1200, 20), # first level right
+        pygame.Rect(screen_width-20-300, GROUND - LEVEL_HEIGHT*3, 1200, 20), # 1.5 level right
+        pygame.Rect(screen_width-20-250, GROUND - LEVEL_HEIGHT*4, 1200, 20), # 2nd level right
+        pygame.Rect(screen_width-20-200, GROUND - LEVEL_HEIGHT*5, 1200, 20), # 2.5 level right
+
+        pygame.Rect(20, GROUND - LEVEL_HEIGHT, 400, 20), # half-level left
+        pygame.Rect(20, GROUND - LEVEL_HEIGHT*2, 350, 20), # first level left
+        pygame.Rect(20, GROUND - LEVEL_HEIGHT*3, 300, 20), # 1.5 level left
+        pygame.Rect(20, GROUND - LEVEL_HEIGHT*4, 250, 20), # second level left
+
+        pygame.Rect(screen_width//2 - 150, screen_height-214, 300, 20), # first level middle
+
+        pygame.Rect(20+100, screen_height-214-180-180, 500, 20), # top level left
+        pygame.Rect(screen_width-20-500-100, screen_height-214-180-180, 500, 20) # top level right
     ]
 
     goal_zones = [
-        pygame.Rect((20 + screen_width-20-100)/2, screen_height-470, 100, 100), # jump goal
+        pygame.Rect(20+100+400, screen_height-214-180-180-100, 100, 100), # left
+        pygame.Rect(screen_width-20-500-100, screen_height-214-180-180-100, 100, 100), # middle
+        pygame.Rect(screen_width//2 - 50, screen_height-214-100-84, 100, 100)
     ]
 
 
@@ -217,6 +263,7 @@ def start_level():
     if cur_level == 5: level_5_setup()
     if cur_level == 6: level_6_setup()
     if cur_level == 7: level_7_setup()
+    if cur_level == 8: level_8_setup()
 
 start_level()
 
@@ -360,7 +407,7 @@ while not done:
             _, *jump_frames = jump_frames
             outside_parent = False
         first_space = False
-    if keys[pygame.K_z] and win:
+    if keys[pygame.K_z] and win and cur_level != LAST_LEVEL:
         cur_level += 1
         start_level()
     if not keys[pygame.K_SPACE]:
@@ -384,10 +431,11 @@ while not done:
     if check_win:
         win = True
     if win:
-        text('CONGRATULATIONS!', 410, 110, 80, GOLD)
         if cur_level == LAST_LEVEL:
-            text('You Win! Thank you for Playing!', 240, 210, 80, GOLD)
+            text('CONGRATULATIONS!', 410, 60, 80, GOLD)
+            text('You Win! Thank you for Playing!', 240, 320, 80, GOLD)
         else:
+            text('CONGRATULATIONS!', 410, 110, 80, GOLD)
             text('Press Z to continue', 445, 210, 80, BLACK)
 
 
