@@ -43,7 +43,7 @@ X_SPEED = 6
 JUMP_HEIGHT = 100
 
 
-cur_level = 8
+cur_level = 1
 
 def initialize_variables():
     global push_blocks
