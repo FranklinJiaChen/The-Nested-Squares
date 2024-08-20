@@ -1,7 +1,6 @@
 import pygame
 from player import Player
 from push_block import PushBlock
-from random import randint
 
 pygame.init()
 
